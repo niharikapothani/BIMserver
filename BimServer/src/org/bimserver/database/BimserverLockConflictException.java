@@ -18,17 +18,47 @@ package org.bimserver.database;
  *****************************************************************************/
 
 import org.bimserver.BimserverDatabaseException;
-import com.sleepycat.je.LockConflictException;
+import com.datastax.driver.core.exceptions.ReadFailureException; 
+import com.datastax.driver.core.exceptions.ReadTimeoutException;
+import com.datastax.driver.core.exceptions.WriteFailureException;
+import com.datastax.driver.core.exceptions.WriteTimeoutException;
+
 
 public class BimserverLockConflictException extends BimserverDatabaseException {
-
 	private static final long serialVersionUID = 9043339658520339789L;
 
-	public BimserverLockConflictException(LockConflictException e) {
-		super(e);
+	//A non-timeout error during a read query.This happens when some of the replicas that were contacted by the coordinator replied with an error.
+	public BimserverLockConflictException(ReadFailureException rf) {
+		super(rf);
+	}
+	public ReadFailureException getReadFailureException() {
+		return (ReadFailureException) getCause();
 	}
 	
-	public LockConflictException getLockException() {
-		return (LockConflictException) getCause();
+	//A Cassandra timeout during a read query.
+	public BimserverLockConflictException(ReadTimeoutException rt) {
+                super(rt);
+        }
+	public ReadTimeoutException getReadTimeoutException() {
+		 return (ReadTimeoutException) getCause();
 	}
+	
+	//A non-timeout error during a write query.This happens when some of the replicas that were contacted by the coordinator replied with an error.
+	public BimserverLockConflictException(WriteFailureException wf) {
+                super(wf);
+        }
+	public WriteFailureException getWriteFailureException() {
+                return (WriteFailureException) getCause();
+        }
+	
+	//A Cassandra timeout during a write query.
+	public BimserverLockConflictException(WriteTimeoutException wt) {
+                super(wt);
+        }
+	public WriteTimeoutException getWriteTimeoutException() {
+                return (WriteTimeoutException) getCause();
+        }
+
+	
+
 }

@@ -1,4 +1,4 @@
-package org.bimserver.database.berkeley;
+package org.bimserver.database.Cassandra;
 
 /******************************************************************************
  * Copyright (C) 2009-2016  BIMserver.org
@@ -44,6 +44,8 @@ import org.bimserver.utils.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+/*
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.CursorConfig;
 import com.sleepycat.je.Database;
@@ -59,10 +61,11 @@ import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 import com.sleepycat.je.TransactionConfig;
+*/
 
-public class BerkeleyKeyValueStore implements KeyValueStore {
+public class CassandraKeyValueStore implements KeyValueStore {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(BerkeleyKeyValueStore.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CassandraKeyValueStore.class);
 	private Environment environment;
 	private long committedWrites;
 	private long reads;
@@ -78,7 +81,7 @@ public class BerkeleyKeyValueStore implements KeyValueStore {
 	private boolean useTransactions = true;
 	private CursorConfig unsafeCursorConfig;
 
-	public BerkeleyKeyValueStore(Path dataDir) throws DatabaseInitException {
+	public CassandraKeyValueStore(Path dataDir) throws DatabaseInitException {
 		if (Files.isDirectory(dataDir)) {
 			try {
 				if (PathUtils.list(dataDir).size() > 0) {
@@ -137,7 +140,7 @@ public class BerkeleyKeyValueStore implements KeyValueStore {
 	public BimTransaction startTransaction() {
 		if (useTransactions) {
 			try {
-				return new BerkeleyTransaction(environment.beginTransaction(null, transactionConfig));
+				return new CassandraTransaction(environment.beginTransaction(null, transactionConfig));
 			} catch (DatabaseException e) {
 				LOGGER.error("", e);
 			}
@@ -232,9 +235,9 @@ public class BerkeleyKeyValueStore implements KeyValueStore {
 
 	private Transaction getTransaction(DatabaseSession databaseSession) {
 		if (databaseSession != null) {
-			BerkeleyTransaction berkeleyTransaction = (BerkeleyTransaction) databaseSession.getBimTransaction();
-			if (berkeleyTransaction != null) {
-				return berkeleyTransaction.getTransaction();
+			CassandraTransaction CassandraTransaction = (CassandraTransaction) databaseSession.getBimTransaction();
+			if (CassandraTransaction != null) {
+				return CassandraTransaction.getTransaction();
 			}
 		}
 		return null;
@@ -347,11 +350,11 @@ public class BerkeleyKeyValueStore implements KeyValueStore {
 		try {
 			TableWrapper tableWrapper = getTableWrapper(tableName);
 			cursor = tableWrapper.getDatabase().openCursor(getTransaction(databaseSession, tableWrapper), getCursorConfig(tableWrapper));
-			BerkeleyRecordIterator berkeleyRecordIterator = new BerkeleyRecordIterator(cursor, this, cursorCounter.incrementAndGet());
+			CassandraRecordIterator CassandraRecordIterator = new CassandraRecordIterator(cursor, this, cursorCounter.incrementAndGet());
 			if (MONITOR_CURSOR_STACK_TRACES) {
-				openCursors.put(berkeleyRecordIterator.getCursorId(), new Exception().getStackTrace());
+				openCursors.put(CassandraRecordIterator.getCursorId(), new Exception().getStackTrace());
 			}
-			return berkeleyRecordIterator;
+			return CassandraRecordIterator;
 		} catch (DatabaseException e) {
 			LOGGER.error("", e);
 		}
@@ -364,11 +367,11 @@ public class BerkeleyKeyValueStore implements KeyValueStore {
 		try {
 			TableWrapper tableWrapper = getTableWrapper(tableName);
 			cursor = tableWrapper.getDatabase().openCursor(getTransaction(databaseSession, tableWrapper), getCursorConfig(tableWrapper));
-			BerkeleySearchingRecordIterator berkeleySearchingRecordIterator = new BerkeleySearchingRecordIterator(cursor, this, cursorCounter.incrementAndGet(), mustStartWith, startSearchingAt);
+			CassandraSearchingRecordIterator CassandraSearchingRecordIterator = new CassandraSearchingRecordIterator(cursor, this, cursorCounter.incrementAndGet(), mustStartWith, startSearchingAt);
 			if (MONITOR_CURSOR_STACK_TRACES) {
-				openCursors.put(berkeleySearchingRecordIterator.getCursorId(), new Exception().getStackTrace());
+				openCursors.put(CassandraSearchingRecordIterator.getCursorId(), new Exception().getStackTrace());
 			}
-			return berkeleySearchingRecordIterator;
+			return CassandraSearchingRecordIterator;
 		} catch (BimserverLockConflictException e) {
 			if (cursor != null) {
 				try {
@@ -536,7 +539,7 @@ public class BerkeleyKeyValueStore implements KeyValueStore {
 	
 	@Override
 	public String getType() {
-		return "Berkeley DB Java Edition " + JEVersion.CURRENT_VERSION.toString();
+		return "Cassandra DB Java Edition " + JEVersion.CURRENT_VERSION.toString();
 	}
 
 	@Override

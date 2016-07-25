@@ -18,26 +18,24 @@ package org.bimserver.database;
  *****************************************************************************/
 
 import org.bimserver.BimserverDatabaseException;
-import org.bimserver.database.berkeley.DatabaseInitException;
-import org.bimserver.database.migrations.InconsistentModelsException;
-import org.bimserver.database.migrations.Migrator;
 import org.bimserver.emf.MetaDataManager;
 import org.eclipse.emf.ecore.EClass;
+import org.bimserver.database.migrations.InconsistentModelsException;
+import org.bimserver.database.migrations.Migrator;
+import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
+import org.bimserver.DatabaseSession;
 
 public interface BimDatabase {
+
 	DatabaseSession createSession();
-
 	void close();
-
 	Migrator getMigrator();
-
 	void init() throws DatabaseInitException, DatabaseRestartRequiredException, InconsistentModelsException;
-
+	//getting an object ID from Eclass
 	long newOid(EClass eClass);
-	
 	MetaDataManager getMetaDataManager();
-
 	Registry getRegistry();
-
 	EClass getEClassForOid(long oid) throws BimserverDatabaseException;
 }

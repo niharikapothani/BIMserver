@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.bimserver.BimserverDatabaseException;
-import org.bimserver.database.berkeley.BimserverConcurrentModificationDatabaseException;
 import org.bimserver.plugins.deserializers.DatabaseInterface;
 
 public interface KeyValueStore {
@@ -67,8 +66,7 @@ public interface KeyValueStore {
 
 	Set<String> getAllTableNames();
 
-	void storeNoOverwrite(String tableName, byte[] key, byte[] value, DatabaseSession databaseSession) throws BimserverDatabaseException, BimserverLockConflictException, BimserverConcurrentModificationDatabaseException;
-
+	void storeNoOverwrite(String tableName, byte[] key, byte[] value, DatabaseSession databaseSession) throws BimserverDatabaseException, BimserverLockConflictException;
 	void incrementCommittedWrites(long committedWrites);
 
 	void incrementReads(long reads);
