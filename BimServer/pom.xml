@@ -17,7 +17,9 @@
 				</excludes>
 			</resource>
 		</resources>
+		<pluginManagement>
 		<plugins>
+		
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
@@ -44,7 +46,9 @@
 					</execution>
 				</executions>
 			</plugin>
+		
 		</plugins>
+	</pluginManagement>
 	</build>
 	<dependencies>
 		<dependency>
@@ -53,6 +57,13 @@
 			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core -->
+		<dependency>
+		    <groupId>com.datastax.cassandra</groupId>
+		    <artifactId>cassandra-driver-core</artifactId>
+		    <version>3.0.3</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jul-to-slf4j</artifactId>
@@ -173,5 +184,11 @@
 			<artifactId>org.apache.oltu.oauth2.dynamicreg.server</artifactId>
 			<version>1.0.1</version>
 		</dependency>
+		<dependency>
+            <groupId>com.strategicgains</groupId>
+            <artifactId>RestExpress</artifactId>
+            <version>0.11.3</version>
+        </dependency>
+		
 	</dependencies>
 </project>

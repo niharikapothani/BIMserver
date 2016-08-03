@@ -22,6 +22,7 @@
 				<directory>genclasses</directory>
 			</resource>
 		</resources>
+		<pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -43,6 +44,7 @@
 				</executions>
 			</plugin>
 		</plugins>
+	</pluginManagement>
 	</build>
 	<dependencies>
 		<dependency>

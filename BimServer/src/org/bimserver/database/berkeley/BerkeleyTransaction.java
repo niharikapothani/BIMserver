@@ -23,27 +23,28 @@ import org.bimserver.database.BimserverLockConflictException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.LockConflictException;
-import com.sleepycat.je.Transaction;
+import com.datastax.driver.core.exceptions.ReadTimeoutException;
+import com.datastax.driver.core.exceptions.WriteTimeoutException;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 
 public class BerkeleyTransaction implements BimTransaction {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(BerkeleyTransaction.class);
-	private final Transaction transaction;
+	private final Session transaction;
 	private boolean transactionAlive = true;
 
-	public BerkeleyTransaction(Transaction transaction) {
+	public BerkeleyTransaction(Session transaction) {
 		this.transaction = transaction;
 	}
 
-	public Transaction getTransaction() {
+	public Session getCluster() {
 		return transaction;
 	}
 
 	@Override
 	public void setName(String name) {
-		transaction.setName(name);
+		System.out.println("No name for session in cassandra...have to edit this part of code!");
 	}
 
 	@Override
@@ -56,27 +57,35 @@ public class BerkeleyTransaction implements BimTransaction {
 	@Override
 	public void rollback() {
 		try {
-			transaction.abort();
+			transaction.close();
 			transactionAlive = false;
-		} catch (DatabaseException e) {
-			LOGGER.error("", e);
 		}
+		catch(NoHostAvailableException h){
+			h.getCause();
+			LOGGER.error(getId());
+		}
+		
 	}
 
 	@Override
 	public void commit() throws BimserverLockConflictException, BimserverDatabaseException {
 		try {
-			transaction.commit();
+			transaction.close();
 			transactionAlive = false;
-		} catch (LockConflictException e) {
-			throw new BimserverLockConflictException(e);
-		} catch (DatabaseException e) {
-			throw new BimserverDatabaseException(e);
+		}catch (ReadTimeoutException rt) {
+		    throw new BimserverLockConflictException(rt);
+	    }catch (WriteTimeoutException wt) {
+	    throw new BimserverLockConflictException(wt);
+	    }catch(NoHostAvailableException h){
+			h.getCause();
 		}
+//		catch (DatabaseException e) {
+//			throw new BimserverDatabaseException(e);
+//		}
 	}
 
 	@Override
-	public long getId() {
-		return transaction.getId();
+	public String getId() {
+		return transaction.getLoggedKeyspace();
 	}
 }

@@ -23,6 +23,8 @@ import java.util.Set;
 import org.bimserver.BimserverDatabaseException;
 import org.bimserver.plugins.deserializers.DatabaseInterface;
 
+import com.datastax.driver.core.Row;
+
 public interface KeyValueStore {
 
 	boolean containsTable(String tableName);
@@ -33,18 +35,18 @@ public interface KeyValueStore {
 
 	void store(String tableName, byte[] key, byte[] value, DatabaseSession databaseSession) throws BimserverLockConflictException, BimserverDatabaseException;
 
-	RecordIterator getRecordIterator(String tableName, DatabaseSession databaseSession) throws BimserverLockConflictException, BimserverDatabaseException;
+	RecordIterator getRecordIterator(String tableName,  DatabaseSession databaseSession) throws BimserverLockConflictException, BimserverDatabaseException;
 
-	SearchingRecordIterator getRecordIterator(String tableName, byte[] mustStartWith, byte[] startSearchingAt, DatabaseSession databaseSession) throws BimserverLockConflictException,
-			BimserverDatabaseException;
+	SearchingRecordIterator getRecordIterator(String tableName,byte[] mustStartWith, byte[] startSearchingAt, DatabaseSession databaseSession) throws BimserverLockConflictException,
+		BimserverDatabaseException;
 
 	long count(String tableName);
 
-	byte[] get(String tableName, byte[] key, DatabaseSession databaseSession) throws BimserverLockConflictException, BimserverDatabaseException;
+	byte[] get(String tableName, byte[] key, DatabaseSession databaseSession) throws BimserverDatabaseException ;
 
 	byte[] getFirstStartingWith(String tableName, byte[] key, DatabaseSession databaseSession) throws BimserverLockConflictException, BimserverDatabaseException;
 
-	void sync();
+	//void sync();
 
 	void close();
 
@@ -54,7 +56,7 @@ public interface KeyValueStore {
 
 	String getLocation();
 
-	String getStats();
+	//String getStats();
 
 	BimTransaction startTransaction();
 
@@ -75,13 +77,13 @@ public interface KeyValueStore {
 	
 	void store(String tableName, byte[] key, byte[] value, int offset, int length, DatabaseSession databaseSession) throws BimserverDatabaseException, BimserverLockConflictException;
 
-	void dumpOpenCursors();
+	//void dumpOpenCursors();
 
 	boolean createIndexTable(String tableName, DatabaseSession databaseSession, boolean transactional) throws BimserverDatabaseException;
 
 	void openIndexTable(String indexTableName, boolean transactional) throws BimserverDatabaseException;
 
-	List<byte[]> getDuplicates(String tableName, byte[] keyBytes, DatabaseSession databaseSession) throws BimserverDatabaseException;
+	List<byte[]> getDuplicates(String tableName,byte[] key, DatabaseSession databaseSession) throws BimserverDatabaseException;
 
 	void delete(String indexTableName, byte[] featureBytesOldIndex, byte[] array, DatabaseSession databaseSession) throws BimserverLockConflictException;
 }

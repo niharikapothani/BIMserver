@@ -34,6 +34,7 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 
+
 import org.bimserver.BimserverDatabaseException;
 import org.bimserver.ServerIfcModel;
 import org.bimserver.database.actions.BimDatabaseAction;
@@ -88,10 +89,14 @@ import org.eclipse.emf.ecore.impl.EEnumImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.exceptions.ReadTimeoutException;
+
+import com.datastax.driver.core.exceptions.WriteTimeoutException;
+import com.datastax.driver.core.utils.Bytes;
 import com.google.common.base.Charsets;
-import com.sleepycat.je.LockConflictException;
-import com.sleepycat.je.LockTimeoutException;
-import com.sleepycat.je.TransactionTimeoutException;
+import com.datastax.driver.core.*;
+
 
 public class DatabaseSession implements LazyLoader, OidProvider, DatabaseInterface, AutoCloseable {
 	public static final int DEFAULT_CONFLICT_RETRIES = 10;
@@ -155,7 +160,7 @@ public class DatabaseSession implements LazyLoader, OidProvider, DatabaseInterfa
 			try {
 				bimTransaction.close();
 			} catch (IllegalStateException e) {
-				database.getKeyValueStore().dumpOpenCursors();
+			//	database.getKeyValueStore().dumpOpenCursors();
 			}
 		}
 		if (DEVELOPER_DEBUG) {
@@ -205,7 +210,7 @@ public class DatabaseSession implements LazyLoader, OidProvider, DatabaseInterfa
 			}
 			if (bimTransaction != null) {
 				bimTransaction.commit();
-				database.getKeyValueStore().sync();
+				//database.getKeyValueStore().sync();
 			}
 			database.incrementCommittedWrites(writes);
 			close();
@@ -719,24 +724,30 @@ public class DatabaseSession implements LazyLoader, OidProvider, DatabaseInterfa
 				objectsToCommit.clear();
 				bimTransaction = database.getKeyValueStore().startTransaction();
 				if (DEVELOPER_DEBUG) {
-					LockConflictException lockException = e.getLockException();
-					if (lockException instanceof TransactionTimeoutException) {
-					} else if (lockException instanceof LockTimeoutException) {
-					}
-					LOGGER.info("Lock while executing " + action.getClass().getSimpleName() + " run (" + i + ")", lockException);
-					long[] ownerTxnIds = e.getLockException().getOwnerTxnIds();
-					for (long txnid : ownerTxnIds) {
-						DatabaseSession databaseSession = database.getDatabaseSession(txnid);
-						if (databaseSession != null) {
-							LOGGER.info("Owner: " + databaseSession);
-							StackTraceElement[] stackTraceElements = databaseSession.getStackTrace();
-							for (StackTraceElement stackTraceElement : stackTraceElements) {
-								LOGGER.info("\tat " + stackTraceElement);
-							}
-						}
-					}
+					ReadTimeoutException lockException1 = e.getReadTimeoutException();
+				    WriteTimeoutException lockException2 = e.getWriteTimeoutException();
+
+//					if (lockException instanceof TransactionTimeoutException) {
+//					} else if (lockException instanceof LockTimeoutException) {
+//					}
+//					LOGGER.info("Lock while executing " + action.getClass().getSimpleName() + " run (" + i + ")", lockException);
+//					long[] ownerTxnIds = e.getLockException().getOwnerTxnIds();
+//					for (long txnid : ownerTxnIds) {
+//						DatabaseSession databaseSession = database.getDatabaseSession(txnid);
+//						if (databaseSession != null) {
+//							LOGGER.info("Owner: " + databaseSession);
+//							StackTraceElement[] stackTraceElements = databaseSession.getStackTrace();
+//							for (StackTraceElement stackTraceElement : stackTraceElements) {
+//								LOGGER.info("\tat " + stackTraceElement);
+//							}
+//						}
+//					}
 				}
-			} catch (UncheckedBimserverLockConflictException e) {
+			}catch (ReadTimeoutException rt) {
+			    throw new BimserverLockConflictException(rt);
+		    }catch (WriteTimeoutException wt) {
+		    	throw new BimserverLockConflictException(wt);
+		    }catch (UncheckedBimserverLockConflictException e) {
 				LOGGER.info("UncheckedBimserverLockConflictException");
 				bimTransaction.rollback();
 				objectCache.clear();
@@ -1021,26 +1032,26 @@ public class DatabaseSession implements LazyLoader, OidProvider, DatabaseInterfa
 		databaseInformation.setCreated(database.getCreated());
 		databaseInformation.setDatabaseSizeInBytes(database.getKeyValueStore().getDatabaseSizeInBytes());
 		databaseInformation.setSchemaVersion(database.getRegistry().readInt(Database.SCHEMA_VERSION, this));
-		String stats = database.getKeyValueStore().getStats();
-		Scanner scanner = new Scanner(stats);
-		try {
-			DatabaseInformationCategory category = StoreFactory.eINSTANCE.createDatabaseInformationCategory();
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				if (line.contains("=")) {
-					DatabaseInformationItem item = StoreFactory.eINSTANCE.createDatabaseInformationItem();
-					category.getItems().add(item);
-					item.setKey(line.substring(0, line.indexOf("=")));
-					item.setValue(line.substring(line.indexOf("=") + 1));
-				} else {
-					category = StoreFactory.eINSTANCE.createDatabaseInformationCategory();
-					category.setTitle(line);
-					databaseInformation.getCategories().add(category);
-				}
-			}
-		} finally {
-			scanner.close();
-		}
+//		String stats = database.getKeyValueStore().getStats();
+//		Scanner scanner = new Scanner(stats);
+//		try {
+//			DatabaseInformationCategory category = StoreFactory.eINSTANCE.createDatabaseInformationCategory();
+//			while (scanner.hasNextLine()) {
+//				String line = scanner.nextLine();
+//				if (line.contains("=")) {
+//					DatabaseInformationItem item = StoreFactory.eINSTANCE.createDatabaseInformationItem();
+//					category.getItems().add(item);
+//					item.setKey(line.substring(0, line.indexOf("=")));
+//					item.setValue(line.substring(line.indexOf("=") + 1));
+//				} else {
+//					category = StoreFactory.eINSTANCE.createDatabaseInformationCategory();
+//					category.setTitle(line);
+//					databaseInformation.getCategories().add(category);
+//				}
+//			}
+//		} finally {
+//			scanner.close();
+//		}
 		databaseInformation.setLocation(database.getKeyValueStore().getLocation());
 		return databaseInformation;
 	}
@@ -2001,7 +2012,7 @@ public class DatabaseSession implements LazyLoader, OidProvider, DatabaseInterfa
 		return null;
 	}
 
-	public long getTransactionId() {
+	public String getTransactionId() {
 		return bimTransaction.getId();
 	}
 

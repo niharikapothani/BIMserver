@@ -19,15 +19,15 @@ package org.bimserver.database.berkeley;
 
 import org.bimserver.database.Record;
 
-import com.sleepycat.je.DatabaseEntry;
+
 
 public class BerkeleyRecord implements Record {
 	final byte[] key;
 	final byte[] value;
 	
-	public BerkeleyRecord(DatabaseEntry key, DatabaseEntry value) {
-		this.key = key.getData();
-		this.value = value.getData();
+	public BerkeleyRecord(String key, TableWrapper tableName) {
+		this.key = key.getBytes();
+		this.value = tableName.getDatabase().toString().getBytes();
 	}
 
 	@Override

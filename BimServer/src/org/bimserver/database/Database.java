@@ -35,7 +35,7 @@ import org.bimserver.BimServer;
 import org.bimserver.BimserverDatabaseException;
 import org.bimserver.database.actions.AddUserDatabaseAction;
 import org.bimserver.database.actions.CreateBaseProjectDatabaseAction;
-//import org.bimserver.database.berkeley.DatabaseInitException;
+import org.bimserver.database.berkeley.DatabaseInitException;
 import org.bimserver.database.migrations.InconsistentModelsException;
 import org.bimserver.database.migrations.MigrationException;
 import org.bimserver.database.migrations.Migrator;
@@ -60,8 +60,9 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.exceptions.ConnectionException;
 
-import com.sleepycat.je.DatabaseNotFoundException;
+
 
 public class Database implements BimDatabase {
 
@@ -289,7 +290,7 @@ public class Database implements BimDatabase {
 						String indexTableName = eClass.getEPackage().getName() + "_" + eClass.getName() + "_" + eStructuralFeature.getName();
 						try {
 							keyValueStore.openIndexTable(indexTableName, transactional);
-						} catch (DatabaseNotFoundException e) {
+						} catch (ConnectionException e) {
 						}
 					}
 				}
@@ -412,7 +413,7 @@ public class Database implements BimDatabase {
 		return metaDataManager;
 	}
 	
-	public DatabaseSession getDatabaseSession(long txnid) {
+	public DatabaseSession getDatabaseSession(String txnid) {
 		for (DatabaseSession databaseSession : sessions) {
 			if (databaseSession.getTransactionId() == txnid) {
 				return databaseSession;

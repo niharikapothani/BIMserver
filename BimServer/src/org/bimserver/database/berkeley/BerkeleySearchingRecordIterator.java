@@ -18,6 +18,7 @@ package org.bimserver.database.berkeley;
  *****************************************************************************/
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import org.bimserver.database.BimserverLockConflictException;
 import org.bimserver.database.Record;
@@ -25,50 +26,50 @@ import org.bimserver.database.SearchingRecordIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sleepycat.je.Cursor;
-import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.LockConflictException;
-import com.sleepycat.je.LockMode;
-import com.sleepycat.je.OperationStatus;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.exceptions.ReadTimeoutException;
+import com.datastax.driver.core.exceptions.WriteTimeoutException;
+import com.datastax.driver.core.utils.Bytes;
 
 public class BerkeleySearchingRecordIterator implements SearchingRecordIterator {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(BerkeleySearchingRecordIterator.class);
-	private final Cursor cursor;
+	private Session session;
 	private final byte[] mustStartWith;
+	
 	private byte[] nextStartSearchingAt;
-	private long cursorId;
+	
+	TableWrapper value ;
+	
 	private BerkeleyKeyValueStore berkeleyKeyValueStore;
 
-	public BerkeleySearchingRecordIterator(Cursor cursor, BerkeleyKeyValueStore berkeleyKeyValueStore, long cursorId, byte[] mustStartWith, byte[] startSearchingAt) throws BimserverLockConflictException {
-		this.cursor = cursor;
+	public BerkeleySearchingRecordIterator( BerkeleyKeyValueStore berkeleyKeyValueStore, TableWrapper tableName,byte[] mustStartWith, byte[] startSearchingAt) throws BimserverLockConflictException {
+		
 		this.berkeleyKeyValueStore = berkeleyKeyValueStore;
-		this.cursorId = cursorId;
 		this.mustStartWith = mustStartWith;
-		this.nextStartSearchingAt = startSearchingAt;
 	}
 
-	public long getCursorId() {
-		return cursorId;
-	}
 	
 	private Record getFirstNext(byte[] startSearchingAt) throws BimserverLockConflictException {
 		this.nextStartSearchingAt = null;
-		DatabaseEntry key = new DatabaseEntry(startSearchingAt);
-		DatabaseEntry value = new DatabaseEntry();
 		try {
-			OperationStatus next = cursor.getSearchKeyRange(key, value, LockMode.DEFAULT);
-			if (next == OperationStatus.SUCCESS) {
+			String key =  Bytes.toHexString(startSearchingAt);
+			ResultSet rs = session.execute(key,value);
+			Iterator<Row> iter = rs.iterator();
+			if (iter.hasNext()) {
 				byte[] firstBytes = new byte[mustStartWith.length];
-				System.arraycopy(key.getData(), 0, firstBytes, 0, mustStartWith.length);
+				System.arraycopy(key.getBytes(), 0, firstBytes, 0, mustStartWith.length);
 				if (Arrays.equals(firstBytes, mustStartWith)) {
 					return new BerkeleyRecord(key, value);
 				}
 			}
-		} catch (LockConflictException e) {
-			throw new BimserverLockConflictException(e);
-		} catch (DatabaseException e) {
+		} catch (ReadTimeoutException rt) {
+		    throw new BimserverLockConflictException(rt);
+	    }catch (WriteTimeoutException wt) {
+	    	throw new BimserverLockConflictException(wt);
+	    } catch (Exception e) {
 			LOGGER.error("", e);
 		}
 		return null;
@@ -79,20 +80,22 @@ public class BerkeleySearchingRecordIterator implements SearchingRecordIterator 
 		if (nextStartSearchingAt != null) {
 			return getFirstNext(nextStartSearchingAt);
 		}
-		DatabaseEntry key = new DatabaseEntry();
-		DatabaseEntry value = new DatabaseEntry();
 		try {
-			OperationStatus next = cursor.getNext(key, value, LockMode.DEFAULT);
-			if (next == OperationStatus.SUCCESS) {
+			String key =  Bytes.toHexString(nextStartSearchingAt);
+			ResultSet rs = session.execute(key,value);
+			Iterator<Row> iter = rs.iterator();
+			if (iter.hasNext()) {
 				byte[] firstBytes = new byte[mustStartWith.length];
-				System.arraycopy(key.getData(), 0, firstBytes, 0, mustStartWith.length);
+				System.arraycopy(key.getBytes(), 0, firstBytes, 0, mustStartWith.length);
 				if (Arrays.equals(firstBytes, mustStartWith)) {
 					return new BerkeleyRecord(key, value);
 				}
 			}
-		} catch (LockConflictException e) {
-			throw new BimserverLockConflictException(e);
-		} catch (DatabaseException e) {
+		} catch (ReadTimeoutException rt) {
+		    throw new BimserverLockConflictException(rt);
+	    }catch (WriteTimeoutException wt) {
+	    throw new BimserverLockConflictException(wt);
+	    }catch (Exception e) {
 			LOGGER.error("", e);
 		}
 		return null;
@@ -101,9 +104,9 @@ public class BerkeleySearchingRecordIterator implements SearchingRecordIterator 
 	@Override
 	public void close() {
 		try {
-			cursor.close();
-			berkeleyKeyValueStore.removeOpenCursor(cursorId);
-		} catch (DatabaseException e) {
+			session.close();
+			berkeleyKeyValueStore.close();
+		} catch (Exception e) {
 			LOGGER.error("", e);
 		}
 	}
@@ -118,20 +121,23 @@ public class BerkeleySearchingRecordIterator implements SearchingRecordIterator 
 		if (nextStartSearchingAt != null) {
 			return getFirstNext(nextStartSearchingAt);
 		}
-		DatabaseEntry key = new DatabaseEntry();
-		DatabaseEntry value = new DatabaseEntry();
 		try {
-			OperationStatus next = cursor.getLast(key, value, LockMode.DEFAULT);
-			if (next == OperationStatus.SUCCESS) {
+			String key =  Bytes.toHexString(nextStartSearchingAt);
+			ResultSet rs = session.execute(key,value);
+			Iterator<Row> iter = rs.iterator();
+			
+			if (iter.hasNext()) {
 				byte[] firstBytes = new byte[mustStartWith.length];
-				System.arraycopy(key.getData(), 0, firstBytes, 0, mustStartWith.length);
+				System.arraycopy(key.getBytes(), 0, firstBytes, 0, mustStartWith.length);
 				if (Arrays.equals(firstBytes, mustStartWith)) {
 					return new BerkeleyRecord(key, value);
 				}
 			}
-		} catch (LockConflictException e) {
-			throw new BimserverLockConflictException(e);
-		} catch (DatabaseException e) {
+		} catch (ReadTimeoutException rt) {
+		    throw new BimserverLockConflictException(rt);
+	    }catch (WriteTimeoutException wt) {
+	    throw new BimserverLockConflictException(wt);
+	    } catch (Exception e) {
 			LOGGER.error("", e);
 		}
 		return null;

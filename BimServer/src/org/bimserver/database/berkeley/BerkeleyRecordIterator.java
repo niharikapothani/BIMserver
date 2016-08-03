@@ -1,5 +1,6 @@
 package org.bimserver.database.berkeley;
 
+
 /******************************************************************************
  * Copyright (C) 2009-2016  BIMserver.org
  * 
@@ -22,67 +23,72 @@ import org.bimserver.database.Record;
 import org.bimserver.database.RecordIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Iterator;
+import java.lang.Exception;
+import java.util.NoSuchElementException;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 
-import com.sleepycat.je.Cursor;
-import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.LockMode;
-import com.sleepycat.je.OperationStatus;
 
 public class BerkeleyRecordIterator implements RecordIterator {
-	private long cursorId;
-	private static final Logger LOGGER = LoggerFactory.getLogger(BerkeleyRecordIterator.class);
-	private final Cursor cursor;
-	private BerkeleyKeyValueStore berkeleyKeyValueStore;
-
-	public BerkeleyRecordIterator(Cursor cursor, BerkeleyKeyValueStore berkeleyKeyValueStore, long cursorId) {
-		this.cursor = cursor;
-		this.berkeleyKeyValueStore = berkeleyKeyValueStore;
-		this.cursorId = cursorId;
-	}
-
-	public long getCursorId() {
-		return cursorId;
-	}
 	
-	public Record next() {
-		DatabaseEntry key = new DatabaseEntry();
-		DatabaseEntry value = new DatabaseEntry();
+	private static final Logger LOGGER = LoggerFactory.getLogger(BerkeleyRecordIterator.class);
+	private BerkeleyKeyValueStore berkeleyKeyValueStore;
+	private static Session session;
+	String key;
+	TableWrapper value ;
+	
+	public BerkeleyRecordIterator( TableWrapper tableName, BerkeleyKeyValueStore berkeleyKeyValueStore) {
+		
+		this.value = tableName ;
+		this.berkeleyKeyValueStore = berkeleyKeyValueStore;
+	}
+
+	public Record next(){
+		
 		try {
-			OperationStatus next = cursor.getNext(key, value, LockMode.DEFAULT);
-			if (next == OperationStatus.SUCCESS) {
+			
+			ResultSet rs = session.execute(key,value);
+			Iterator<Row> iter = rs.iterator();
+			
+			if (iter.hasNext()) {
+				
 				return new BerkeleyRecord(key, value);
 			} else {
 				return null;
 			}
-		} catch (DatabaseException e) {
-			LOGGER.error("", e);
-		}
+		} catch(NoSuchElementException s)
+				{
+					LOGGER.error("" , s.getMessage());
+				}
 		return null;
 	}
 
 	@Override
 	public void close() {
 		try {
-			cursor.close();
-			berkeleyKeyValueStore.removeOpenCursor(cursorId);
-		} catch (DatabaseException e) {
+				session.close();
+			berkeleyKeyValueStore.close();
+		} catch (Exception e) {
 			LOGGER.error("", e);
 		}
 	}
 
 	@Override
 	public Record last() throws BimserverLockConflictException {
-		DatabaseEntry key = new DatabaseEntry();
-		DatabaseEntry value = new DatabaseEntry();
+		
 		try {
-			OperationStatus next = cursor.getLast(key, value, LockMode.DEFAULT);
-			if (next == OperationStatus.SUCCESS) {
+			ResultSet rs = session.execute(key,value);
+			Iterator<Row> iter = rs.iterator();
+			if (iter.hasNext()) {
 				return new BerkeleyRecord(key, value);
 			} else {
 				return null;
 			}
-		} catch (DatabaseException e) {
+		} catch(NoSuchElementException s)
+		{
+			LOGGER.error("" , s.getMessage());
 		}
 		return null;
 	}

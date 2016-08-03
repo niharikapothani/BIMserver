@@ -25,7 +25,8 @@ import org.bimserver.database.migrations.Migrator;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
-import org.bimserver.DatabaseSession;
+import org.bimserver.database.DatabaseSession;
+import org.bimserver.database.berkeley.DatabaseInitException;
 
 public interface BimDatabase {
 

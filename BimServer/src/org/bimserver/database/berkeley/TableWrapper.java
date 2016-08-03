@@ -1,12 +1,12 @@
 package org.bimserver.database.berkeley;
 
-import com.sleepycat.je.Database;
-
+//import com.sleepycat.je.Database;
+import com.datastax.driver.core.KeyspaceMetadata;
 public class TableWrapper {
-	private Database database;
+	private KeyspaceMetadata database;
 	private boolean transactional;
 
-	public TableWrapper(Database database, boolean transactional) {
+	public TableWrapper(KeyspaceMetadata database, boolean transactional) {
 		this.database = database;
 		this.transactional = transactional;
 	}
@@ -15,7 +15,7 @@ public class TableWrapper {
 		return transactional;
 	}
 	
-	public Database getDatabase() {
+	public KeyspaceMetadata getDatabase() {
 		return database;
 	}
 }
