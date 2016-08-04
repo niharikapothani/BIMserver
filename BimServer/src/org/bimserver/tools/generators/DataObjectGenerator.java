@@ -58,7 +58,8 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sleepycat.je.DatabaseException;
+import org.bimserver.BimserverDatabaseException;;
+
 
 public class DataObjectGenerator {
 
@@ -70,7 +71,7 @@ public class DataObjectGenerator {
 		this.schema = schema;
 	}
 
-	public VirtualFile generate(VirtualFile basedir) throws DatabaseException {
+	public VirtualFile generate(VirtualFile basedir) throws BimserverDatabaseException {
 		GenModel genModel = GenModelFactory.eINSTANCE.createGenModel();
 		genModel.setRuntimeVersion(GenRuntimeVersion.EMF25);
 		genModel.setComplianceLevel(GenJDKLevel.JDK60_LITERAL);
@@ -205,7 +206,7 @@ public class DataObjectGenerator {
 		}
 	}
 
-	public List<GenPackage> createGenPackages(GenModel genModel, VirtualFile basedir) throws DatabaseException {
+	public List<GenPackage> createGenPackages(GenModel genModel, VirtualFile basedir) throws BimserverDatabaseException {
 		ResourceSetImpl resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
 		Map<VirtualFile, Resource> resources = new HashMap<VirtualFile, Resource>();
