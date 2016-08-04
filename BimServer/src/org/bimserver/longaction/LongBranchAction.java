@@ -22,7 +22,7 @@ import org.bimserver.database.DatabaseSession;
 import org.bimserver.database.ProgressHandler;
 import org.bimserver.database.actions.AbstractBranchDatabaseAction;
 import org.bimserver.database.actions.BimDatabaseAction;
-import org.bimserver.database.berkeley.BimserverConcurrentModificationDatabaseException;
+import org.bimserver.database.cassandra.BimserverConcurrentModificationDatabaseException;
 import org.bimserver.interfaces.objects.SProgressTopicType;
 import org.bimserver.models.store.ActionState;
 import org.bimserver.models.store.ConcreteRevision;

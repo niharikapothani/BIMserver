@@ -35,7 +35,7 @@ import org.bimserver.BimServerConfig;
 import org.bimserver.BimserverDatabaseException;
 import org.bimserver.LocalDevPluginLoader;
 import org.bimserver.database.DatabaseRestartRequiredException;
-import org.bimserver.database.berkeley.DatabaseInitException;
+import org.bimserver.database.cassandra.DatabaseInitException;
 import org.bimserver.emf.IdEObject;
 import org.bimserver.emf.IfcModelInterface;
 import org.bimserver.emf.MetaDataManager;

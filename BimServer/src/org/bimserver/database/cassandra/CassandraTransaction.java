@@ -1,4 +1,4 @@
-package org.bimserver.database.berkeley;
+package org.bimserver.database.cassandra;
 
 /******************************************************************************
  * Copyright (C) 2009-2016  BIMserver.org
@@ -28,13 +28,13 @@ import com.datastax.driver.core.exceptions.WriteTimeoutException;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 
-public class BerkeleyTransaction implements BimTransaction {
+public class CassandraTransaction implements BimTransaction {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(BerkeleyTransaction.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CassandraTransaction.class);
 	private final Session transaction;
 	private boolean transactionAlive = true;
 
-	public BerkeleyTransaction(Session transaction) {
+	public CassandraTransaction(Session transaction) {
 		this.transaction = transaction;
 	}
 

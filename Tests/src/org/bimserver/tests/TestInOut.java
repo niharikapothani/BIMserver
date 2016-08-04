@@ -30,7 +30,7 @@ import org.bimserver.BimserverDatabaseException;
 import org.bimserver.LocalDevPluginLoader;
 import org.bimserver.LocalDevSetup;
 import org.bimserver.database.DatabaseRestartRequiredException;
-import org.bimserver.database.berkeley.DatabaseInitException;
+import org.bimserver.database.cassandra.DatabaseInitException;
 import org.bimserver.interfaces.objects.SDeserializerPluginConfiguration;
 import org.bimserver.interfaces.objects.SProject;
 import org.bimserver.interfaces.objects.SSerializerPluginConfiguration;

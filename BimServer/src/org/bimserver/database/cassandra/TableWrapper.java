@@ -1,4 +1,4 @@
-package org.bimserver.database.berkeley;
+package org.bimserver.database.cassandra;
 
 //import com.sleepycat.je.Database;
 import com.datastax.driver.core.KeyspaceMetadata;

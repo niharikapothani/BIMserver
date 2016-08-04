@@ -34,9 +34,9 @@ import org.bimserver.database.Database;
 import org.bimserver.database.DatabaseRestartRequiredException;
 import org.bimserver.database.DatabaseSession;
 import org.bimserver.database.OldQuery;
-import org.bimserver.database.berkeley.BerkeleyKeyValueStore;
-import org.bimserver.database.berkeley.BimserverConcurrentModificationDatabaseException;
-import org.bimserver.database.berkeley.DatabaseInitException;
+import org.bimserver.database.cassandra.BimserverConcurrentModificationDatabaseException;
+import org.bimserver.database.cassandra.CassandraKeyValueStore;
+import org.bimserver.database.cassandra.DatabaseInitException;
 import org.bimserver.database.migrations.InconsistentModelsException;
 import org.bimserver.database.query.conditions.AttributeCondition;
 import org.bimserver.database.query.conditions.Condition;
@@ -590,7 +590,7 @@ public class BimServer {
 				LOGGER.info("No email templates found");
 			}
 			Path databaseDir = config.getHomeDir().resolve("database");
-			BerkeleyKeyValueStore keyValueStore = new BerkeleyKeyValueStore(databaseDir);
+			CassandraKeyValueStore keyValueStore = new CassandraKeyValueStore(databaseDir);
 
 			schemaConverterManager.registerConverter(new Ifc2x3tc1ToIfc4SchemaConverterFactory());
 			schemaConverterManager.registerConverter(new Ifc4ToIfc2x3tc1SchemaConverterFactory());
@@ -610,7 +610,7 @@ public class BimServer {
 				bimDatabase.init();
 			} catch (DatabaseRestartRequiredException e) {
 				bimDatabase.close();
-				keyValueStore = new BerkeleyKeyValueStore(databaseDir);
+				keyValueStore = new CassandraKeyValueStore(databaseDir);
 				bimDatabase = new Database(this, packages, keyValueStore, metaDataManager);
 				try {
 					bimDatabase.init();

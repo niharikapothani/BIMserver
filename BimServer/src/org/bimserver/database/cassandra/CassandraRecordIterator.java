@@ -1,4 +1,4 @@
-package org.bimserver.database.berkeley;
+package org.bimserver.database.cassandra;
 
 
 /******************************************************************************
@@ -31,18 +31,18 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
 
-public class BerkeleyRecordIterator implements RecordIterator {
+public class CassandraRecordIterator implements RecordIterator {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(BerkeleyRecordIterator.class);
-	private BerkeleyKeyValueStore berkeleyKeyValueStore;
+	private static final Logger LOGGER = LoggerFactory.getLogger(CassandraRecordIterator.class);
+	private CassandraKeyValueStore CassandraKeyValueStore;
 	private static Session session;
 	String key;
 	TableWrapper value ;
 	
-	public BerkeleyRecordIterator( TableWrapper tableName, BerkeleyKeyValueStore berkeleyKeyValueStore) {
+	public CassandraRecordIterator( TableWrapper tableName, CassandraKeyValueStore CassandraKeyValueStore) {
 		
 		this.value = tableName ;
-		this.berkeleyKeyValueStore = berkeleyKeyValueStore;
+		this.CassandraKeyValueStore = CassandraKeyValueStore;
 	}
 
 	public Record next(){
@@ -54,7 +54,7 @@ public class BerkeleyRecordIterator implements RecordIterator {
 			
 			if (iter.hasNext()) {
 				
-				return new BerkeleyRecord(key, value);
+				return new CassandraRecord(key, value);
 			} else {
 				return null;
 			}
@@ -69,7 +69,7 @@ public class BerkeleyRecordIterator implements RecordIterator {
 	public void close() {
 		try {
 				session.close();
-			berkeleyKeyValueStore.close();
+			CassandraKeyValueStore.close();
 		} catch (Exception e) {
 			LOGGER.error("", e);
 		}
@@ -82,7 +82,7 @@ public class BerkeleyRecordIterator implements RecordIterator {
 			ResultSet rs = session.execute(key,value);
 			Iterator<Row> iter = rs.iterator();
 			if (iter.hasNext()) {
-				return new BerkeleyRecord(key, value);
+				return new CassandraRecord(key, value);
 			} else {
 				return null;
 			}

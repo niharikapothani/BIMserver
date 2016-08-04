@@ -22,7 +22,7 @@ import org.bimserver.BimserverDatabaseException;
 import org.bimserver.database.BimserverLockConflictException;
 import org.bimserver.database.DatabaseSession;
 import org.bimserver.database.OldQuery;
-import org.bimserver.database.berkeley.BimserverConcurrentModificationDatabaseException;
+import org.bimserver.database.cassandra.BimserverConcurrentModificationDatabaseException;
 import org.bimserver.interfaces.objects.SUser;
 import org.bimserver.models.log.AccessMethod;
 import org.bimserver.models.store.ServerState;

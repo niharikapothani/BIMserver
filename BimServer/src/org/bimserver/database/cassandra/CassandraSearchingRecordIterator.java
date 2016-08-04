@@ -1,4 +1,4 @@
-package org.bimserver.database.berkeley;
+package org.bimserver.database.cassandra;
 
 /******************************************************************************
  * Copyright (C) 2009-2016  BIMserver.org
@@ -33,9 +33,9 @@ import com.datastax.driver.core.exceptions.ReadTimeoutException;
 import com.datastax.driver.core.exceptions.WriteTimeoutException;
 import com.datastax.driver.core.utils.Bytes;
 
-public class BerkeleySearchingRecordIterator implements SearchingRecordIterator {
+public class CassandraSearchingRecordIterator implements SearchingRecordIterator {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(BerkeleySearchingRecordIterator.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CassandraSearchingRecordIterator.class);
 	private Session session;
 	private final byte[] mustStartWith;
 	
@@ -43,11 +43,11 @@ public class BerkeleySearchingRecordIterator implements SearchingRecordIterator 
 	
 	TableWrapper value ;
 	
-	private BerkeleyKeyValueStore berkeleyKeyValueStore;
+	private CassandraKeyValueStore CassandraKeyValueStore;
 
-	public BerkeleySearchingRecordIterator( BerkeleyKeyValueStore berkeleyKeyValueStore, TableWrapper tableName,byte[] mustStartWith, byte[] startSearchingAt) throws BimserverLockConflictException {
+	public CassandraSearchingRecordIterator( CassandraKeyValueStore CassandraKeyValueStore, TableWrapper tableName,byte[] mustStartWith, byte[] startSearchingAt) throws BimserverLockConflictException {
 		
-		this.berkeleyKeyValueStore = berkeleyKeyValueStore;
+		this.CassandraKeyValueStore = CassandraKeyValueStore;
 		this.mustStartWith = mustStartWith;
 	}
 
@@ -62,7 +62,7 @@ public class BerkeleySearchingRecordIterator implements SearchingRecordIterator 
 				byte[] firstBytes = new byte[mustStartWith.length];
 				System.arraycopy(key.getBytes(), 0, firstBytes, 0, mustStartWith.length);
 				if (Arrays.equals(firstBytes, mustStartWith)) {
-					return new BerkeleyRecord(key, value);
+					return new CassandraRecord(key, value);
 				}
 			}
 		} catch (ReadTimeoutException rt) {
@@ -88,7 +88,7 @@ public class BerkeleySearchingRecordIterator implements SearchingRecordIterator 
 				byte[] firstBytes = new byte[mustStartWith.length];
 				System.arraycopy(key.getBytes(), 0, firstBytes, 0, mustStartWith.length);
 				if (Arrays.equals(firstBytes, mustStartWith)) {
-					return new BerkeleyRecord(key, value);
+					return new CassandraRecord(key, value);
 				}
 			}
 		} catch (ReadTimeoutException rt) {
@@ -105,7 +105,7 @@ public class BerkeleySearchingRecordIterator implements SearchingRecordIterator 
 	public void close() {
 		try {
 			session.close();
-			berkeleyKeyValueStore.close();
+			CassandraKeyValueStore.close();
 		} catch (Exception e) {
 			LOGGER.error("", e);
 		}
@@ -130,7 +130,7 @@ public class BerkeleySearchingRecordIterator implements SearchingRecordIterator 
 				byte[] firstBytes = new byte[mustStartWith.length];
 				System.arraycopy(key.getBytes(), 0, firstBytes, 0, mustStartWith.length);
 				if (Arrays.equals(firstBytes, mustStartWith)) {
-					return new BerkeleyRecord(key, value);
+					return new CassandraRecord(key, value);
 				}
 			}
 		} catch (ReadTimeoutException rt) {

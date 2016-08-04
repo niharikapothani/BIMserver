@@ -38,7 +38,7 @@ import java.util.Set;
 import org.bimserver.BimserverDatabaseException;
 import org.bimserver.ServerIfcModel;
 import org.bimserver.database.actions.BimDatabaseAction;
-import org.bimserver.database.berkeley.BimserverConcurrentModificationDatabaseException;
+import org.bimserver.database.cassandra.BimserverConcurrentModificationDatabaseException;
 import org.bimserver.database.query.conditions.Condition;
 import org.bimserver.database.query.conditions.IsOfTypeCondition;
 import org.bimserver.emf.IdEObject;

@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import org.bimserver.database.DatabaseRestartRequiredException;
-import org.bimserver.database.berkeley.DatabaseInitException;
+import org.bimserver.database.cassandra.DatabaseInitException;
 import org.bimserver.models.log.AccessMethod;
 import org.bimserver.models.store.ServerState;
 import org.bimserver.plugins.OptionsParser;

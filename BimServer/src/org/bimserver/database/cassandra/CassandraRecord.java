@@ -1,4 +1,4 @@
-package org.bimserver.database.berkeley;
+package org.bimserver.database.cassandra;
 
 /******************************************************************************
  * Copyright (C) 2009-2016  BIMserver.org
@@ -17,13 +17,26 @@ package org.bimserver.database.berkeley;
  * along with this program.  If not, see {@literal<http://www.gnu.org/licenses/>}.
  *****************************************************************************/
 
-import org.bimserver.BimserverDatabaseException;
+import org.bimserver.database.Record;
 
-public class BimserverConcurrentModificationDatabaseException extends BimserverDatabaseException {
 
-	private static final long serialVersionUID = -2109619498156905565L;
 
-	public BimserverConcurrentModificationDatabaseException(String message) {
-		super(message);
+public class CassandraRecord implements Record {
+	final byte[] key;
+	final byte[] value;
+	
+	public CassandraRecord(String key, TableWrapper tableName) {
+		this.key = key.getBytes();
+		this.value = tableName.getDatabase().toString().getBytes();
+	}
+
+	@Override
+	public byte[] getKey() {
+		return key;
+	}
+
+	@Override
+	public byte[] getValue() {
+		return value;
 	}
 }

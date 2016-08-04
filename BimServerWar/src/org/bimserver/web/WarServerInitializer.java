@@ -31,7 +31,7 @@ import org.bimserver.BimServer;
 import org.bimserver.BimServerConfig;
 import org.bimserver.BimserverDatabaseException;
 import org.bimserver.database.DatabaseRestartRequiredException;
-import org.bimserver.database.berkeley.DatabaseInitException;
+import org.bimserver.database.cassandra.DatabaseInitException;
 import org.bimserver.plugins.ResourceFetcher;
 import org.bimserver.resources.WarResourceFetcher;
 import org.bimserver.shared.exceptions.PluginException;

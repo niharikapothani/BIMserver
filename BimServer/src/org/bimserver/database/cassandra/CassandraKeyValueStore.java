@@ -1,4 +1,4 @@
-package org.bimserver.database.berkeley;
+package org.bimserver.database.cassandra;
 
 /******************************************************************************
  * Copyright (C) 2009-2016  BIMserver.org
@@ -67,9 +67,9 @@ import com.datastax.driver.core.exceptions.QueryValidationException;
 import com.datastax.driver.core.exceptions.UnsupportedFeatureException;
 import com.datastax.driver.core.exceptions.ConnectionException;
 
-public class BerkeleyKeyValueStore implements KeyValueStore {
+public class CassandraKeyValueStore implements KeyValueStore {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(BerkeleyKeyValueStore.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CassandraKeyValueStore.class);
 	private static Cluster cluster;
 	private static Session session;
 	public static final String mykeyspace="keyspace";
@@ -81,7 +81,7 @@ public class BerkeleyKeyValueStore implements KeyValueStore {
 	private long lastPrintedCommittedWrites = 0;
 	private boolean useTransactions = true;
 	
-	public BerkeleyKeyValueStore(Path dataDir) throws DatabaseInitException, NoHostAvailableException
+	public CassandraKeyValueStore(Path dataDir) throws DatabaseInitException, NoHostAvailableException
 	{
 		if (Files.isDirectory(dataDir)) {
 			try {
@@ -140,7 +140,7 @@ public class BerkeleyKeyValueStore implements KeyValueStore {
 	{
 		if (useTransactions) {
 			try {
-				return new BerkeleyTransaction(session.init());
+				return new CassandraTransaction(session.init());
 			} catch (NoHostAvailableException h){
 				System.out.println("check host connection (" + h.getMessage() + ")" );
 			} catch (AuthenticationException a){
@@ -243,9 +243,9 @@ public class BerkeleyKeyValueStore implements KeyValueStore {
 	private Session getTransaction(DatabaseSession databaseSession) 
 	{
 		if (databaseSession != null) {
-			BerkeleyTransaction BerkeleyTransaction = (BerkeleyTransaction) databaseSession.getBimTransaction();
-			if (BerkeleyTransaction != null) {
-				return BerkeleyTransaction.getCluster();
+			CassandraTransaction CassandraTransaction = (CassandraTransaction) databaseSession.getBimTransaction();
+			if (CassandraTransaction != null) {
+				return CassandraTransaction.getCluster();
 			}
 		}
 		return null;
@@ -385,8 +385,8 @@ public class BerkeleyKeyValueStore implements KeyValueStore {
 				System.out.println("Session initiated \n");
 			}
 			
-			BerkeleyRecordIterator berkeleyRecordIterator = new BerkeleyRecordIterator(tableWrapper , this);
-			return berkeleyRecordIterator;
+			CassandraRecordIterator CassandraRecordIterator = new CassandraRecordIterator(tableWrapper , this);
+			return CassandraRecordIterator;
 		}catch (BimserverDatabaseException db) {
 			LOGGER.error("", db);
 		}
@@ -409,8 +409,8 @@ public class BerkeleyKeyValueStore implements KeyValueStore {
 				getTransaction(databaseSession, tableWrapper).init();
 				System.out.println("Session initiated \n");
 			}
-			BerkeleySearchingRecordIterator berkeleySearchingRecordIterator = new BerkeleySearchingRecordIterator( this, tableWrapper,mustStartWith, startSearchingAt);
-			return berkeleySearchingRecordIterator;
+			CassandraSearchingRecordIterator CassandraSearchingRecordIterator = new CassandraSearchingRecordIterator( this, tableWrapper,mustStartWith, startSearchingAt);
+			return CassandraSearchingRecordIterator;
 		} catch (BimserverLockConflictException e) {
 			if (session != null) {
 				try {

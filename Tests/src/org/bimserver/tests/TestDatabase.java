@@ -29,8 +29,8 @@ import org.bimserver.database.DatabaseRestartRequiredException;
 import org.bimserver.database.DatabaseSession;
 import org.bimserver.database.KeyValueStore;
 import org.bimserver.database.OldQuery;
-import org.bimserver.database.berkeley.BerkeleyKeyValueStore;
-import org.bimserver.database.berkeley.DatabaseInitException;
+import org.bimserver.database.cassandra.CassandraKeyValueStore;
+import org.bimserver.database.cassandra.DatabaseInitException;
 import org.bimserver.database.migrations.InconsistentModelsException;
 import org.bimserver.models.ifc2x3tc1.Ifc2x3tc1Package;
 import org.bimserver.models.store.Project;
@@ -278,7 +278,7 @@ public class TestDatabase {
 	}
 
 	private void init() throws DatabaseInitException {
-		keyValueStore = new BerkeleyKeyValueStore(dataDir);
+		keyValueStore = new CassandraKeyValueStore(dataDir);
 		database = new Database(null, CollectionUtils.singleSet(Ifc2x3tc1Package.eINSTANCE), keyValueStore, null);
 		try {
 			database.init();

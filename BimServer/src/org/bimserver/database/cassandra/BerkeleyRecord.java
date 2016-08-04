@@ -1,4 +1,4 @@
-package org.bimserver.database.berkeley;
+package org.bimserver.database.cassandra;
 
 /******************************************************************************
  * Copyright (C) 2009-2016  BIMserver.org
@@ -17,15 +17,26 @@ package org.bimserver.database.berkeley;
  * along with this program.  If not, see {@literal<http://www.gnu.org/licenses/>}.
  *****************************************************************************/
 
-public class DatabaseInitException extends Exception {
+import org.bimserver.database.Record;
 
-	private static final long serialVersionUID = -7160444254695347258L;
 
-	public DatabaseInitException(String message) {
-		super(message);
+
+public class BerkeleyRecord implements Record {
+	final byte[] key;
+	final byte[] value;
+	
+	public BerkeleyRecord(String key, TableWrapper tableName) {
+		this.key = key.getBytes();
+		this.value = tableName.getDatabase().toString().getBytes();
 	}
 
-	public DatabaseInitException(Exception e) {
-		super(e);
+	@Override
+	public byte[] getKey() {
+		return key;
+	}
+
+	@Override
+	public byte[] getValue() {
+		return value;
 	}
 }

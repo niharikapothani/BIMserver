@@ -1,4 +1,4 @@
-package org.bimserver.database;
+package org.bimserver.database.cassandra;
 
 /******************************************************************************
  * Copyright (C) 2009-2016  BIMserver.org
@@ -18,22 +18,12 @@ package org.bimserver.database;
  *****************************************************************************/
 
 import org.bimserver.BimserverDatabaseException;
-import org.bimserver.emf.MetaDataManager;
-import org.eclipse.emf.ecore.EClass;
-import org.bimserver.database.migrations.InconsistentModelsException;
-import org.bimserver.database.migrations.Migrator;
-import org.bimserver.database.DatabaseSession;
-import org.bimserver.database.cassandra.DatabaseInitException;
 
-public interface BimDatabase {
+public class BimserverConcurrentModificationDatabaseException extends BimserverDatabaseException {
 
-	DatabaseSession createSession();
-	void close();
-	Migrator getMigrator();
-	void init() throws DatabaseInitException, DatabaseRestartRequiredException, InconsistentModelsException;
-	//getting an object ID from Eclass
-	long newOid(EClass eClass);
-	MetaDataManager getMetaDataManager();
-	Registry getRegistry();
-	EClass getEClassForOid(long oid) throws BimserverDatabaseException;
+	private static final long serialVersionUID = -2109619498156905565L;
+
+	public BimserverConcurrentModificationDatabaseException(String message) {
+		super(message);
+	}
 }
