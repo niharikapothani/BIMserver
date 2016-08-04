@@ -1,6 +1,6 @@
 package org.bimserver.database.cassandra;
 
-//import com.sleepycat.je.Database;
+
 import com.datastax.driver.core.KeyspaceMetadata;
 public class TableWrapper {
 	private KeyspaceMetadata database;
